@@ -1,0 +1,145 @@
+.editor {
+	--statePreviewBackground: inherit;
+	--dmiWidth: 32px;
+	--dmiHeight: 32px;
+	--zoomFactor: 1;
+	--zoomedDmiWidth: 32px;
+	--zoomedDmiHeight: 32px;
+	--frameGridRows: 1;
+	--frameGridColumns: 1;
+
+	user-select: none;
+}
+
+.infoBar {
+	display: flex;
+	flex-direction: row;
+}
+
+.infoBarSection {
+	flex: 0 1 auto;
+	margin-left: 15px;
+	display: flex;
+	flex-flow: row;
+	align-self: center;
+	align-items: center;
+}
+
+.stateList {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.stateList > * {
+	margin: 10px;
+	flex: 0 0 auto;
+}
+
+.statePreviewBox:hover{
+	background-color: var(--vscode-button-hoverBackground)
+}
+
+.statePreviewBox.selected {
+	background-color: var(--vscode-editor-selectionBackground)
+}
+
+.statePreviewBox.selected:hover {
+	background-color: var(--vscode-button-hoverBackground)
+}
+
+.statePreviewBox .statePreview{
+	background: var(--statePreviewBackground);
+	border: 1px solid black;
+	margin: 0 auto;
+}
+
+.stateName {
+	font-weight: bolder;
+	text-align: center;
+	user-select: text;
+	max-width: var(--zoomedDmiWidth);
+	overflow-wrap: break-word;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.frame {
+	width: var(--zoomedDmiWidth);
+	height: var(--zoomedDmiHeight);
+	min-width: var(--zoomedDmiWidth);
+	min-height: var(--zoomedDmiHeight);
+	image-rendering: pixelated;
+}
+
+.zoom {
+	font-size: large;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.zoom:hover {
+	background-color: var(--vscode-button-hoverBackground)
+}
+
+.newState {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.newState:hover{
+	background-color: var(--vscode-button-hoverBackground)
+}
+
+.newState .codicon {
+	font-size: var(--zoomedDmiHeight) !important; 
+}
+
+
+.dirGrid {
+	display: grid;
+	grid-template-columns: repeat(3,var(--zoomedDmiWidth));
+	grid-template-rows: repeat(3,var(--zoomedDmiHeight));
+	gap: 1rem;
+}
+
+.singleDirGrid{
+	width: var(--zoomedDmiWidth);
+	height: var(--zoomedDmiHeight);
+}
+
+
+.delaysGrid {
+	display: grid;
+	grid-template-columns: repeat(var(--frameGridColumns), var(--zoomedDmiWidth));
+	gap: 1rem;
+	text-align: center;
+}
+
+.frameGrid {
+	display: grid;
+	grid-template-columns: repeat(var(--frameGridColumns), var(--zoomedDmiWidth));
+	grid-template-rows: repeat(var(--frameGridRows), var(--zoomedDmiHeight));
+	gap: 1rem;
+}
+
+.gridHeader {
+	text-align: center;
+	align-self: center;
+}
+
+.frameGrid > :hover {
+	background-color: var(--vscode-button-hoverBackground)
+}
+
+.frameGrid > .selected {
+	background-color: var(--vscode-editor-selectionBackground)
+}
+
+.frameGrid > .selected:hover {
+	background-color: var(--vscode-button-hoverBackground)
+}

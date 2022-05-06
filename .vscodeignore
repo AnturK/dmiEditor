@@ -1,0 +1,13 @@
+# Ignore everything but..
+*/**
+
+# extension files
+!.vscodeignore
+!LICENSE
+!CHANGELOG.md
+!README.md
+!package.json
+!dist/*
+# Icon font files
+!node_modules/@vscode/codicons/dist
+
