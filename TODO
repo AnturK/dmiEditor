@@ -1,3 +1,5 @@
+Fix copying stuff with context menu
+Multiple selection copy/paste/cut
 Icon state reordering + sort command
 Handle delete hotkey in input block in nicer way
 Readonly mode - diffs - Vscode doesn't support this well

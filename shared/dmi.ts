@@ -113,27 +113,36 @@ export class DmiState {
 
 		this.dirs = new_dircount;
 
-		this.frames = [...Array(target_frames)].map((_,index) => {
-			if(this.frames.length > index)
-				return  this.frames[index].clone();
-			else
-				return DmiState.empty_frame(width,height);
-		});
+		this.frames = resizeArray(this.frames, target_frames, index => DmiState.empty_frame(width,height));
 
-		this.frames_encoded = [...Array(target_frames)].map((_,index) => {
-			if(this.frames_encoded.length > index)
-				return this.frames_encoded[index];
-			else
-				return this.frames[index].toDataURL();
-		});
+		this.frames_encoded = resizeArray(this.frames_encoded, target_frames, index => this.frames[index].toDataURL());
 
 		if(this.delays.length){
-			this.delays = [ ...this.delays, ...Array(Math.max(this.framecount - this.delays.length, 0)).fill(1)];
+			this.delays = resizeArray(this.delays,this.framecount,index => 1);
 		}
-		
+			
 		if(this.hotspots !== null){
 			const last_hotspot = this.hotspots[this.hotspots.length];
-			this.hotspots = [ ...this.hotspots, ...Array<[number,number]>(Math.max(this.framecount - this.hotspots.length, 0)).fill(last_hotspot)];
+			this.hotspots = resizeArray(this.hotspots,this.framecount,index => last_hotspot);
+		}
+	}
+
+	set_framecount(new_framecount: number) {
+		const target_frames = new_framecount * this.dirs;
+		const width = this.frames[0].width;
+		const height = this.frames[0].height;
+
+		this.frames = resizeArray(this.frames, target_frames, index => DmiState.empty_frame(width,height));
+
+		this.frames_encoded = resizeArray(this.frames_encoded, target_frames, index => this.frames[index].toDataURL());
+
+		if(this.delays.length){
+			this.delays = resizeArray(this.delays,this.framecount,index => 1);
+		}
+			
+		if(this.hotspots !== null){
+			const last_hotspot = this.hotspots[this.hotspots.length];
+			this.hotspots = resizeArray(this.hotspots,this.framecount,index => last_hotspot);
 		}
 	}
 
@@ -141,6 +150,8 @@ export class DmiState {
 		const defaultBackground = [192,192,192,0];
 		return new Image(width,height,new Array(width*height).fill(defaultBackground).flat(),{alpha:1, kind: 'RGBA' as any });
 	}
+
+
 
 	get width(){
 		return this.frames[0].width;
@@ -168,6 +179,21 @@ export class DmiState {
 			this.directional_previews[dir] = window.URL.createObjectURL(blob);
 		}
 		return this.directional_previews[dir];
+	}
+
+	/// Builds composite image of this state for external editors
+	async buildComposite() {
+		const output_height = this.dirs * this.height;
+		const output_width = this.width * this.framecount;
+		const new_image = DmiState.empty_frame(output_width,output_height) as unknown as ImageDurr & Image;
+		for (let dir_index = 0; dir_index < this.dirs; dir_index++) {
+			const dir = DmiState.DIR_ORDER[dir_index];
+			for (let frame_index = 0; frame_index < this.framecount; frame_index++) {
+				const frame = this.get_frame(frame_index,dir);
+				new_image.insert(frame,{ x:frame_index * this.width , y: dir_index*this.width, inPlace: true});
+			}
+		}
+		return await new_image.toBlob();
 	}
 
 }
@@ -241,15 +267,14 @@ export class Dmi {
 		const png_width = sqrt * this.width;
 		const png_height = Math.ceil(num_frames / sqrt) * this.height;
 
-		const result_image = new Image(png_width,png_height);
+		const result_image = DmiState.empty_frame(png_width,png_height) as unknown as ImageDurr & Image;
 
 		let i = 0;
 		for (const state of this.states) {
 			for (const frame of state.frames) {
-				const grah = result_image as unknown as ImageDurr; //Why are all png libraries so bad
 				const frame_x = (i % sqrt) * this.width;
 				const frame_y = Math.floor(i / sqrt) * this.height;
-				grah.insert(frame, { x: frame_x, y: frame_y, inPlace: true });
+				result_image.insert(frame, { x: frame_x, y: frame_y, inPlace: true });
 				i++;
 			}
 		}
@@ -308,7 +333,14 @@ export class Dmi {
 		const decoded = await decodePng(data, { parseChunkTypes: '*' });
 		const chunk = decoded.metadata.find(p => p !== undefined && p.type === 'zTXt' && p.keyword !== undefined && p.keyword === 'Description');
 		if (chunk === undefined) {
-			throw Error("No metadata chunk in the file.");
+			const png_as_dmi = new Dmi(decoded.image.width,decoded.image.height);
+			const image = await Image.load(data);
+			const state = new DmiState("png");
+			state.dirs = 1;
+			state.frames.push(image);
+			state.frames_encoded.push(image.toDataURL());
+			png_as_dmi.states.push(state);
+			return png_as_dmi;
 		}
 		const zTXtChunk = chunk as IPngMetadataCompressedTextualData;
 		const metadata = zTXtChunk.text;
@@ -428,4 +460,13 @@ export function unescape_state_name(value: string): string {
 	if(!(value.startsWith('"') && value.endsWith('"')))
 		throw Error("!!Error: Invalid state name, check metadata!!");
 	return value.substring(1,value.length-1).replace('\\"', '"').replace('\\\\', '\\');
+}
+
+function resizeArray<T>(oldArray : Array<T>,new_size:number, fillFunc: (index: number) => T){
+	return [...Array(new_size)].map((_,index) => {
+		if(oldArray.length > index)
+			return oldArray[index];
+		else
+			return fillFunc(index);
+	});
 }

@@ -1,12 +1,17 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import './dmiEditor.css';
 import * as select from './state';
 import { Dmi, DmiState } from '../../shared/dmi';
 import { DocumentChangedEventMessage, MessageType, ReadyResponseMessage } from '../../shared/messaging';
-import { VSCodeBadge, VSCodeButton, VSCodeDivider, VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
+import { VSCodeButton, VSCodeDivider, VSCodeTextField } from '@vscode/webview-ui-toolkit/react';
 import { StateDetailView } from './detailView';
 import { StateList } from './listView';
+
+enum BackgroundType {
+	Default,
+	Checkerboard,
+}
 
 const Editor: React.FC = () => {
 	const [dmi, setDmi] = useState<Dmi>(new Dmi(32, 32));
@@ -18,6 +23,8 @@ const Editor: React.FC = () => {
 	const setOpenStateIndex = (value : number|null) => { select.sessionPersistentData.setOpenStateId(value); setOpenStateIndexRaw(value); };
 	
 	const [searchText,setSearchText] = useState("");
+
+	const [backgroundType, setBackgroundType] = useState(BackgroundType.Default);
 
 	const restoreSession = () => {
 		if(select.sessionPersistentData.zoom !== undefined)
@@ -81,27 +88,45 @@ const Editor: React.FC = () => {
 		resize(dmi.width, parsedHeight);
 	};
 
-	
+	//Turn off default context menu
+	//useGlobalHandler<MouseEvent>("contextmenu", e => {e.preventDefault();},[]);
+
+	const getBackgroundCSS = (bgType: BackgroundType) => {
+		switch (bgType) {
+			case BackgroundType.Default:
+				return 'inherit';
+			case BackgroundType.Checkerboard:
+				return 'repeating-conic-gradient(gray 0% 25%, white 0% 50%) 50% / 20px 20px';
+		}
+	};
+
+	const toggleBackground = () => {
+		const order = [BackgroundType.Default,BackgroundType.Checkerboard];
+		setBackgroundType(order[(order.findIndex(x => x === backgroundType)+1) % order.length]);
+	};
+
 
 	const dynamicStyle = {
 		'--dmiHeight': `${dmi.height}px`,
 		'--dmiWidth': `${dmi.width}px`,
 		'--zoomFactor': zoom,
 		'--zoomedDmiHeight': `${dmi.height * zoom}px`,
-		'--zoomedDmiWidth': `${dmi.width * zoom}px`
+		'--zoomedDmiWidth': `${dmi.width * zoom}px`,
+		'--frameBackground': getBackgroundCSS(backgroundType)
 	} as React.CSSProperties; //I don't get why the type is so restrictive here
 
 	const sizeDisplay = <>
-		<div style={{margin:'auto 1em auto auto'}}>Width</div>
-		<VSCodeTextField value={dmi.width.toString()} size={3} name='width' onChange={e => changeWidth((e.target as HTMLInputElement).value)} />
-		<div style={{margin:'auto 1em auto 1em'}}>Height</div>
-		<VSCodeTextField value={dmi.height.toString()} size={3} name='height' onChange={e => changeHeight((e.target as HTMLInputElement).value)} />
+			<div>Width</div>
+			<VSCodeTextField value={dmi.width.toString()} size={3} name='width' onChange={e => changeWidth((e.target as HTMLInputElement).value)} />
+			<div>Height</div>
+			<VSCodeTextField value={dmi.height.toString()} size={3} name='height' onChange={e => changeHeight((e.target as HTMLInputElement).value)} />
 	</>;
-	const zoomDisplay = <>
+	const zoomDisplay = <div>
 		<VSCodeButton appearance='icon' onClick={() => saveZoom(zoom + 1)}><span className='codicon codicon-zoom-in'/></VSCodeButton>
 		<VSCodeButton appearance='icon' onClick={() => saveZoom(Math.max(1, zoom - 1))}><span className='codicon codicon-zoom-out'/></VSCodeButton>
-	</>;
-	const infoBarElements = [sizeDisplay,zoomDisplay];
+	</div>;
+	const backgroundDisplay = <VSCodeButton appearance='icon' onClick={toggleBackground}><span className='codicon codicon-color-mode'/></VSCodeButton>;
+	const infoBarElements = [sizeDisplay,zoomDisplay, backgroundDisplay];
 
 	let mainContent = null;
 	if(openStateIndex != null){
@@ -116,7 +141,7 @@ const Editor: React.FC = () => {
 	}
 	
 	return (
-		<div className='editor' style={dynamicStyle}>
+		<div className='editor' style={dynamicStyle} onContextMenu={e => e.preventDefault()}>
 			<div className='infoBar'>
 				{infoBarElements.map(e => <div className='infoBarSection'>{e}</div>)}
 			</div>

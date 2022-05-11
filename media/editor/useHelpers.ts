@@ -7,3 +7,7 @@ export const useGlobalHandler = <T = Event>(name: string, handler: (evt: T) => v
 		return () => window.removeEventListener(name, l);
 	}, deps);
 };
+
+export function buildClassName<T extends Record<string,boolean>>(arg : T){
+	return Object.keys(arg).filter(x => arg[x]).join(" ");
+}

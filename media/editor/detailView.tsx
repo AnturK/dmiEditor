@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { VSCodeTextField, VSCodeCheckbox, VSCodeDivider, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
-import { DmiState, Dirs, DirNames } from "../../shared/dmi";
+import { DmiState, Dirs, DirNames, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
 import { Image } from 'image-js';
 import { useGlobalHandler } from "./useHelpers";
@@ -119,14 +119,49 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 		props.pushUpdate(new_state);
 	};
 
+	const updateFrameCount = (new_count: string) => {
+		const parsedCount = parseInt(new_count);
+		if(isNaN(parsedCount))
+			return;
+		if(parsedCount <= 0)
+			return;
+		if(state.framecount == parsedCount)
+			return;
+		const new_state = state.clone();
+		new_state.set_framecount(parsedCount);
+		props.pushUpdate(new_state);
+	};
+
 	const [selectedFrame,setSelectedFrame] = useState<number | null>(null);
 
+	const replaceFrame = (frame: number, image: Image) => {
+		const new_state = state.clone();
+		new_state.frames[frame] = image;
+		new_state.frames_encoded[frame] = image.toDataURL();
+		props.pushUpdate(new_state);
+	};
+
+	const clearFrame = (frame: number) => {
+		replaceFrame(frame,DmiState.empty_frame(state.width,state.height));
+	};
+
+	const copyToClipboard = async (e : ClipboardEvent) => {
+		if (selectedFrame != null) {
+			const frameBlob = await state.frames[selectedFrame].toBlob();
+			const item = new ClipboardItem({ 'image/png' : frameBlob });
+			navigator.clipboard.write([item]);
+		}
+	};
+
 	useGlobalHandler<ClipboardEvent>("paste", async (e) => {
-		if(selectedFrame == null)
+		if(selectedFrame === null)
 			return;
 		e.preventDefault();
+
+		/// First we check png files copypasted wholesale from system - ie windows file explorer copy on a some.png file because navigator.clipboard.read() just panics in this case.
+		/// We do it first because rejected navigator.clipboard.read also clears this list. Don't ask why.
 		const data = e.clipboardData!;
-		// handle 'image/png' files
+		const imagesFromFiles: Array<{image: Image, name : string}> = [];
 		for (let index = 0; index < data.files.length; index++) {
 			const file = data.files.item(index);
 			if (file?.type !== 'image/png')
@@ -134,36 +169,61 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 			const fileData = await file.arrayBuffer();
 			const prospectiveState = await Image.load(fileData);
 			if (prospectiveState.width == state.width && prospectiveState.height == state.height) {
-				///Replace selected frame with png
-				const new_state = state.clone();
-				new_state.frames[selectedFrame] = prospectiveState;
-				new_state.frames_encoded[selectedFrame] = prospectiveState.toDataURL();
-				props.pushUpdate(new_state);
-				return;
+				imagesFromFiles.push({ image: prospectiveState, name : file.name});
 			}
 		}
-		// Handle copied frames
-		const copied_frame = data.getData("dmi-frame");
-		if (copied_frame != "") {
-			const new_state = state.clone();
-			new_state.frames[selectedFrame] = await Image.load(copied_frame);
-			new_state.frames_encoded[selectedFrame] = copied_frame;
-			props.pushUpdate(new_state);
+		/// Next, actually try to read raw clipboard
+		let clipboardContents : ClipboardItems;
+		try {
+			clipboardContents = await navigator.clipboard.read();
+		} catch (error) {
+			//It failed, possibly due to having these system copied files in there. Add them if any were found earlier.
+			for (const found of imagesFromFiles) {
+				replaceFrame(selectedFrame,found.image);
+				break;
+			}
 			return;
+		}
+		/// Now we actually have access to raw clipboard data so:
+		for (const item of clipboardContents) {
+			/// Check if we have a png data blob 
+			if(item.types.includes('image/png')){
+				const data = await item.getType('image/png');
+				const ab = await data.arrayBuffer();
+				const fileData = new Uint8Array(ab);
+				try {
+					// These are usually just pngs, but in theory (according to chromium docs, but this might be different in electron/vscode) these can also have metadata so we try to parse as dmi
+					const dmi_or_png = await Dmi.parse(fileData);
+					if (dmi_or_png.width == state.width && dmi_or_png.height == state.height) {
+						replaceFrame(selectedFrame,dmi_or_png.states[0].frames[0]);
+						return;
+					}
+				} catch (error) {
+					// Parse failed so it's some mangled metadata, just give up
+					return;
+				}
+			}
 		}
 	}, [selectedFrame,state]);
 
-	useGlobalHandler<ClipboardEvent>("copy", (e) => {
+	useGlobalHandler<ClipboardEvent>("copy", async (e) => {
 		if (selectedFrame != null) {
 			e.preventDefault();
-			const frame = state.frames_encoded[selectedFrame];
-			e.clipboardData?.setData("dmi-frame", frame);
+			copyToClipboard(e);
+		}
+	}, [selectedFrame, state]);
+
+	useGlobalHandler<ClipboardEvent>("cut", async (e) => {
+		if(selectedFrame != null){
+			e.preventDefault();
+			copyToClipboard(e);
+			clearFrame(selectedFrame);
 		}
 	}, [selectedFrame, state]);
 
 
 	return (
-		<div>
+		<div onClick={() => selectedFrame !== null && setSelectedFrame(null)}>
 			<div className='stateProperties'>
 				<VSCodeTextField value={state.name} onChange={e => updateName((e.target as HTMLInputElement).value)}>State name</VSCodeTextField>
 				<div>
@@ -184,6 +244,9 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 					<VSCodeTextField disabled={state.loop === 0} value={state.loop !== 0 ? state.loop.toString() : "∞"} onChange={e => updateLoopCount((e.target as HTMLInputElement).value)}>Loop count</VSCodeTextField>
 					<VSCodeCheckbox style={{marginLeft: '1em'}} checked={state.loop === 0} onChange={toggleInfiniteLoop}>Loop infinitely</VSCodeCheckbox>
 				</div>
+				<div>
+					<VSCodeTextField value={state.framecount.toString()} onChange={e => updateFrameCount((e.target as HTMLInputElement).value)}>Frames</VSCodeTextField>
+				</div>
 			</div>
 			<VSCodeDivider />
 			<div className='directionalDetailPreview'>
@@ -199,7 +262,7 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 					{[...Array(state.dirs)].map((_,dir_index) => (
 					<>
 					<div className="gridHeader">{DirNames[dir_index]}</div>
-					{[...Array(state.framecount)].map((_,frame) => <div className={state.frame_index(frame,DmiState.DIR_ORDER[dir_index]) == selectedFrame ? "selected" : ""} onClick={() => setSelectedFrame(state.frame_index(frame,DmiState.DIR_ORDER[dir_index]))}><img className='frame' src={state.get_frame_encoded(frame, DmiState.DIR_ORDER[dir_index])}/></div>)}
+					{[...Array(state.framecount)].map((_,frame) => <div className={state.frame_index(frame,DmiState.DIR_ORDER[dir_index]) == selectedFrame ? "selected" : ""} onClick={e => {e.stopPropagation();setSelectedFrame(state.frame_index(frame,DmiState.DIR_ORDER[dir_index]));}}><img className='frame' src={state.get_frame_encoded(frame, DmiState.DIR_ORDER[dir_index])}/></div>)}
 					</>))}
 				</div>
 			</div>

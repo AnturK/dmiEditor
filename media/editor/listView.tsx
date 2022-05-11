@@ -2,13 +2,14 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import React, { useState } from "react";
 import { DmiState, Dirs, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
-import { useGlobalHandler } from "./useHelpers";
+import { buildClassName, useGlobalHandler } from "./useHelpers";
 import Image from 'image-js';
 
 type ListStateDisplayProps = {
 	state: DmiState;
 	selected: boolean;
 	hidden: boolean;
+	duplicate: boolean;
 	delete: () => void;
 	select: () => void;
 	open: () => void;
@@ -17,8 +18,17 @@ type ListStateDisplayProps = {
 
 // icon state preview on the state list
 const ListStateDisplay: React.FC<ListStateDisplayProps> = (props) => {
-	const className = props.selected ? 'statePreviewBox selected' : 'statePreviewBox';
 	const iconState = props.state;
+	const listClassName = buildClassName({
+		'statePreviewBox' : true,
+		'selected': props.selected
+	});
+	const displayedName = `${iconState.name || "no name"}${iconState.movement ? "[M]" : ""}`;
+	const nameFieldClass = buildClassName({
+		'stateName': true, 
+		'noname': !iconState.name
+	});
+
 	const handleClick = () => {
 		props.select();
 	};
@@ -28,16 +38,15 @@ const ListStateDisplay: React.FC<ListStateDisplayProps> = (props) => {
 		new_state.name = value;
 		props.modify(new_state);
 	};
-	const displayedName = `${iconState.name}${iconState.movement ? "[M]" : ""}`;
 
-	//<IconStateAnimation frames={[...Array(iconState.framecount)].map((_, index) => iconState.get_frame_encoded(index, Dirs.SOUTH))} delays={iconState.delays} />
 	return (
 		<div
-			className={className}
+			className={listClassName}
 			onClick={handleClick}
 			hidden={props.hidden}
 		>
-			<EditableField value={iconState.name} displayValue={displayedName} onChange={updateName} className='stateName'/>
+			<EditableField value={iconState.name} displayValue={displayedName} onChange={updateName} className={nameFieldClass}/>
+			{props.duplicate && <div className="duplicate">Duplicate</div>}
 			<div className='statePreview' onDoubleClick={props.open}>
 				<img className="frame" src={iconState.generate_preview(Dirs.SOUTH)}/>
 			</div>
@@ -83,35 +92,96 @@ export const StateList: React.FC<StateListProps> = (props) => {
 		props.pushUpdate(new_dmi);
 	};
 
+	///We put this in front of encoded states in clipboard
+	const clipboardHeader = 'EncodedDmiStateHeaderIHateThis:';
+
 	useGlobalHandler<ClipboardEvent>("paste", async (e) => {
 		e.preventDefault();
+
+		/// First we check png files copypasted wholesale from system - ie windows file explorer copy on a some.png file because navigator.clipboard.read() just panics in this case.
+		/// We do it first because rejected navigator.clipboard.read also clears this list. Don't ask why.
 		const data = e.clipboardData!;
-		// handle 'image/png' files
+		const imagesFromFiles: Array<{image: Image, name : string}> = [];
 		for (let index = 0; index < data.files.length; index++) {
-			console.log("Iterating files");
 			const file = data.files.item(index);
 			if (file?.type !== 'image/png')
 				continue;
 			const fileData = await file.arrayBuffer();
 			const prospectiveState = await Image.load(fileData);
 			if (prospectiveState.width == dmi.width && prospectiveState.height == dmi.height) {
-				addFreshState(prospectiveState, file.name);
+				imagesFromFiles.push({ image: prospectiveState, name : file.name});
 			}
 		}
-		// Handle serialized full states
-		const serialized_state = data.getData("dmi-state");
-		if (serialized_state != "") {
-			const state = await DmiState.deserialize(JSON.parse(serialized_state));
-			addState(state);
+		/// Next, actually try to read raw clipboard
+		let clipboardContents : ClipboardItems;
+		try {
+			clipboardContents = await navigator.clipboard.read();
+		} catch (error) {
+			//It failed, possibly due to having these system copied files in there. Add them if any were found earlier.
+			for (const found of imagesFromFiles) {
+				console.log(`Adddingfrom clipboardData.file`);
+				addFreshState(found.image, found.name);
+			}
+			return;
+		}
+		/// Now we actually have access to raw clipboard data so:
+		for (const item of clipboardContents) {
+			/// First let's check if we have a fully serialized state in there from our own copy
+			if(item.types.includes('text/plain')){
+				console.log("Found text blob");
+				const textBlob = await item.getType('text/plain');
+				const clipboardText = await textBlob.text();
+				if(clipboardText.startsWith(clipboardHeader))
+				{
+					const serializedData = clipboardText.slice(clipboardHeader.length);
+					const state = await DmiState.deserialize(JSON.parse(serializedData));
+					if(state.width == dmi.width && state.height == dmi.height){
+						addState(state);
+					}
+					return; //We don't want to try to add png blobs since they always have less info than our direct data
+				}
+			}
+			/// Next check if we have a png data blob 
+			if(item.types.includes('image/png')){
+				const data = await item.getType('image/png');
+				const ab = await data.arrayBuffer();
+				const fileData = new Uint8Array(ab);
+				try {
+					// These are usually just pngs, but in theory (according to chromium docs, but this might be different in electron/vscode) these can also have metadata so we try to parse as dmi
+					const dmi_or_png = await Dmi.parse(fileData);
+					if (dmi_or_png.width == dmi.width && dmi_or_png.height == dmi.height) {
+						for (const state of dmi_or_png.states) {
+							addState(state);
+						}
+					}
+				} catch (error) {
+					// Parse failed so it's some mangled metadata, just give up
+					return;
+				}
+			}
 		}
 	}, [dmi]);
 
-	useGlobalHandler<ClipboardEvent>("copy", (e) => {
+	const copyToClipboard = async (e : ClipboardEvent) => {
 		if (selectedState != null) {
 			e.preventDefault();
 			const state = dmi.states[selectedState];
-			const serialized_state = JSON.stringify(state.serialize());
-			e.clipboardData?.setData("dmi-state", serialized_state);
+			const serializedState = JSON.stringify(state.serialize());
+			const prefixedSerializedState = `${clipboardHeader}${serializedState}`;
+			const imageBlob = await state.buildComposite();
+			const textBlob = new Blob( [prefixedSerializedState], { type : 'text/plain'});
+			const item = new ClipboardItem({ 'image/png' : imageBlob , 'text/plain' : textBlob });
+			navigator.clipboard.write([item]);
+		}
+	};
+
+	useGlobalHandler<ClipboardEvent>("copy", (e) => copyToClipboard(e), [selectedState, dmi]);
+
+	useGlobalHandler<ClipboardEvent>("cut", async (e) => {
+		if(selectedState != null){
+			e.preventDefault();
+			copyToClipboard(e);
+			delete_state(selectedState)();
 		}
 	}, [selectedState, dmi]);
 
@@ -139,6 +209,7 @@ export const StateList: React.FC<StateListProps> = (props) => {
 					select={() => setSelectedState(index)}
 					open={() => props.onOpen(state)}
 					selected={selectedState == index}
+					duplicate={!!dmi.states.find(other_state => other_state != state && other_state.name == state.name && other_state.movement == state.movement)}
 					hidden={props.filterString != "" && !state.name.includes(props.filterString)}
 				/>)}
 		</div>
