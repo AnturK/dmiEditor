@@ -248,11 +248,13 @@ export class Dmi {
 			if(state.movement)
 				comment += `\tmovement = 1\n`;
 			if(state.hotspots !== null && state.hotspots.length > 0){
-				let current: [number,number] | null = null;
+				let previous: [number,number] | null = null;
 				state.hotspots?.forEach((value,index) => {
-					if(value !== current){
+					if(value === undefined || value === null)
+						return;
+					if(previous === null || previous[0] !== value[0] || previous[1] !== value[1]){
 						comment += `\thotspot = ${value[0]},${value[1]},${index + 1}\n`;
-						current = value;
+						previous = value;
 					}
 				});
 			}
