@@ -242,7 +242,7 @@ export class Dmi {
 				comment += `\tdelay = ${state.delays.join()}\n`;
 			}
 			if(state.loop != 0)
-				comment += `\tloop = {state.loop}\n`;
+				comment += `\tloop = ${state.loop}\n`;
 			if(state.rewind)
 				comment += `\trewind = 1\n`;
 			if(state.movement)
