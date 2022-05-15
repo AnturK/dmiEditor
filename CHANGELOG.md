@@ -1,3 +1,6 @@
+# Version 1.0.2
+- Fixes saving dmis with animation loop counts
+
 # Version 1.0.1
 - Duplicate states are now marked.
 - You can now toggle checkerboard background
