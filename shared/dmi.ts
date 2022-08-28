@@ -259,7 +259,7 @@ export class Dmi {
 				});
 			}
 		}
-		comment += "# END DMI";
+		comment += "# END DMI\n";
 		return comment;
 	}
 
