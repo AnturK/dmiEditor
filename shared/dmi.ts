@@ -217,6 +217,7 @@ interface SerializedDmi {
 }
 
 export class Dmi {
+
 	width: number;
 	height: number;
 	states: DmiState[];
@@ -225,6 +226,10 @@ export class Dmi {
 		this.width = width;
 		this.height = height;
 		this.states = [];
+	}
+
+	isSame(other: Dmi) {
+		return this.serialize() === other.serialize();
 	}
 
 	static version = "4.0";
@@ -289,7 +294,7 @@ export class Dmi {
 		//Literally no library supports the ztxt chunk encoder aah
 		const metadata = this.buildMetadata();
 		const data = this.buildData();
-		const result = await encodePng(data, { colorType: 6, ancillaryChunks: [{ keyword: "Description", text: metadata, type: 'zTXt' }], ancillaryChunksAfterIHDR: true });
+		const result = await encodePng(data, { colorType: 6, ancillaryChunks: [{ keyword: "Description", text: metadata, type: 'zTXt', compressionLevel: undefined }], ancillaryChunksAfterIHDR: true });
 		return result.data;
 	}
 

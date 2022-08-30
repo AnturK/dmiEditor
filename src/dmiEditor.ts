@@ -24,7 +24,6 @@ class DmiDocument extends Disposable implements vscode.CustomDocument {
 	}
 
 	private readonly _uri: vscode.Uri;
-
 	private _dmi!: Dmi;
 
 	private constructor(
@@ -114,6 +113,18 @@ class DmiDocument extends Disposable implements vscode.CustomDocument {
 	 * Called by VS Code when the user saves the document to a new location.
 	 */
 	async saveAs(targetResource: vscode.Uri, cancellation: vscode.CancellationToken): Promise<void> {
+		// We compare the actual data to what already exists there to avoid dirtying the file due to zlib compression changes in metadata - EUGH
+		try {
+			const file_data =  await vscode.workspace.fs.readFile(targetResource);
+			const on_disk_dmi = await Dmi.parse(file_data);
+			if(on_disk_dmi.isSame(this.dmi))
+				return;
+		} catch (error) {
+			// Things that can happen here and we assume it's correct
+			// The file does not exist - backups, new files
+			// The file is not actually png/wellformed dmi - SaveAs over something else
+		}
+		// File is different enough to save, let's actually save
 		const fileData = await this.dmi.getFileData();
 		await vscode.workspace.fs.writeFile(targetResource, fileData);
 	}
