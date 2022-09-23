@@ -254,15 +254,17 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 			</div>
 			<VSCodeDivider />
 			<div style={dynamicStyle}>
-				<div className="delaysGrid">
-					<div className="gridHeader">Delay</div>
-					{filledDelays.map((delay,index) => <div><EditableField value={delay.toString()} onChange={val => updateDelay(index, val)}/></div>)}
-				</div>
 				<div className='frameGrid'>
+					<div className="gridHeader">Delay</div>
+					{filledDelays.map((delay,index) => <div className="gridHeader"><EditableField value={delay.toString()} onChange={val => updateDelay(index, val)}/></div>)}
 					{[...Array(state.dirs)].map((_,dir_index) => (
 					<>
 					<div className="gridHeader">{DirNames[dir_index]}</div>
-					{[...Array(state.framecount)].map((_,frame) => <div className={state.frame_index(frame,DmiState.DIR_ORDER[dir_index]) == selectedFrame ? "selected" : ""} onClick={e => {e.stopPropagation();setSelectedFrame(state.frame_index(frame,DmiState.DIR_ORDER[dir_index]));}}><img className='frame' src={state.get_frame_encoded(frame, DmiState.DIR_ORDER[dir_index])}/></div>)}
+					{[...Array(state.framecount)].map((_,frame) => {
+						const index = state.frame_index(frame, DmiState.DIR_ORDER[dir_index]);
+						const isSelected = index == selectedFrame;
+						return <div key={index} className={isSelected ? "gridElement selected" : "gridElement"} onClick={e => { e.stopPropagation(); setSelectedFrame(index); } }><img className='frame' src={state.get_frame_encoded(frame, DmiState.DIR_ORDER[dir_index])} /></div>;
+					})}
 					</>))}
 				</div>
 			</div>

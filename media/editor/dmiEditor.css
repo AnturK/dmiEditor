@@ -130,33 +130,31 @@
 }
 
 
-.delaysGrid {
-	display: grid;
-	grid-template-columns: repeat(var(--frameGridColumns), var(--zoomedDmiWidth));
-	gap: 1rem;
-	text-align: center;
-}
-
 .frameGrid {
 	display: grid;
-	grid-template-columns: repeat(var(--frameGridColumns), var(--zoomedDmiWidth));
-	grid-template-rows: repeat(var(--frameGridRows), var(--zoomedDmiHeight));
+	grid-template-columns: repeat(var(--frameGridColumns), min-content);
+	grid-template-rows: repeat(var(--frameGridRows), min-content);
 	gap: 1rem;
 }
 
 .gridHeader {
 	text-align: center;
 	align-self: center;
+	min-width: var(--zoomedDmiWidth);
 }
 
-.frameGrid > :hover {
-	background-color: var(--vscode-button-hoverBackground)
+.gridElement {
+	padding: 1em;
 }
 
-.frameGrid > .selected {
+.gridElement.selected {
 	background-color: var(--vscode-editor-selectionBackground)
 }
 
-.frameGrid > .selected:hover {
+.gridElement.selected:hover {
+	background-color: var(--vscode-button-hoverBackground)
+}
+
+.gridElement:hover {
 	background-color: var(--vscode-button-hoverBackground)
 }
