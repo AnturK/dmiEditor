@@ -1,3 +1,7 @@
+# Version 1.0.4
+- Adds alerts when pasting states/pngs of wrong size
+- Improves frame grid css 
+
 # Version 1.0.3
 - Fixes metadata parity with dm (newline at the end, hotspots squashing)
 - Saving will not save to disk if the only difference is metdata compression due to inconsistencies between dreammaker and js zlib implementations.
