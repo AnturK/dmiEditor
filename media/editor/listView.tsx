@@ -4,6 +4,8 @@ import { DmiState, Dirs, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
 import { buildClassName, useGlobalHandler } from "./useHelpers";
 import Image from 'image-js';
+import { messageHandler, vscode } from "./state";
+import { MessageType } from "../../shared/messaging";
 
 type ListStateDisplayProps = {
 	state: DmiState;
@@ -111,6 +113,11 @@ export const StateList: React.FC<StateListProps> = (props) => {
 			if (prospectiveState.width == dmi.width && prospectiveState.height == dmi.height) {
 				imagesFromFiles.push({ image: prospectiveState, name : file.name});
 			}
+			else
+			{
+				// TODO: Just resize as needed
+				messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted image (${prospectiveState.width}x${prospectiveState.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
+			}
 		}
 		/// Next, actually try to read raw clipboard
 		let clipboardContents : ClipboardItems;
@@ -138,6 +145,11 @@ export const StateList: React.FC<StateListProps> = (props) => {
 					if(state.width == dmi.width && state.height == dmi.height){
 						addState(state);
 					}
+					else
+					{
+						// TODO: Just resize as needed
+						messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted image (${state.width}x${state.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
+					}
 					return; //We don't want to try to add png blobs since they always have less info than our direct data
 				}
 			}
@@ -153,6 +165,11 @@ export const StateList: React.FC<StateListProps> = (props) => {
 						for (const state of dmi_or_png.states) {
 							addState(state);
 						}
+					}
+					else
+					{
+						// TODO: Just resize as needed
+						messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted image (${dmi_or_png.width}x${dmi_or_png.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
 					}
 				} catch (error) {
 					// Parse failed so it's some mangled metadata, just give up

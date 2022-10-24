@@ -4,7 +4,8 @@ export const enum MessageType{
 	ReadyRequest, //Webview finished initalizing, asking for data
 	ReadyResponse, //Responding with inital data
 	EditEvent, // Dmi edited on webview side
-	DocumentChangedEvent // Document changed externally
+	DocumentChangedEvent, // Document changed externally
+	Alert // Communicate with the user that something went wrong
 }
 
 
@@ -34,8 +35,13 @@ export interface DocumentChangedEventMessage {
 	serialized_dmi: string;
 }
 
+export interface AlertEventMessage {
+	type: MessageType.Alert;
+	text: string;
+}
+
 export type ToWebviewMessage = ReadyResponseMessage | DocumentChangedEventMessage
-export type FromWebviewMessage = ReadyRequestMessage | EditEventMessage
+export type FromWebviewMessage = ReadyRequestMessage | EditEventMessage | AlertEventMessage
 
 export type ExtensionHostMessageHandler = MessageHandler<ToWebviewMessage, FromWebviewMessage>;
 export type WebviewMessageHandler = MessageHandler<FromWebviewMessage, ToWebviewMessage>;

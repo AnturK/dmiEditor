@@ -267,6 +267,9 @@ export class DmiEditorProvider implements vscode.CustomEditorProvider<DmiDocumen
 			case MessageType.EditEvent:
 				await document.makeEdit(message.edited_dmi, false);
 				break;
+			case MessageType.Alert:
+				vscode.window.showErrorMessage(message.text);
+				break;
 		}
 	}
 
