@@ -104,6 +104,7 @@ export const StateList: React.FC<StateListProps> = (props) => {
 		/// We do it first because rejected navigator.clipboard.read also clears this list. Don't ask why.
 		const data = e.clipboardData!;
 		const imagesFromFiles: Array<{image: Image, name : string}> = [];
+		const raw_clipboard_errors = [];
 		for (let index = 0; index < data.files.length; index++) {
 			const file = data.files.item(index);
 			if (file?.type !== 'image/png')
@@ -115,8 +116,8 @@ export const StateList: React.FC<StateListProps> = (props) => {
 			}
 			else
 			{
-				// TODO: Just resize as needed
-				messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted image (${prospectiveState.width}x${prospectiveState.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
+				//Don't display errors here since these values might not be used at all
+				raw_clipboard_errors.push(`Size of pasted image (${prospectiveState.width}x${prospectiveState.height}) does not match size of DMI (${dmi.width}x${dmi.height})`);
 			}
 		}
 		/// Next, actually try to read raw clipboard
@@ -129,52 +130,60 @@ export const StateList: React.FC<StateListProps> = (props) => {
 				console.log(`Adddingfrom clipboardData.file`);
 				addFreshState(found.image, found.name);
 			}
+			for(const error_message of raw_clipboard_errors){
+				// TODO: Just resize as needed
+				messageHandler.sendEvent({ type: MessageType.Alert, text: error_message });
+			}
 			return;
 		}
+
 		/// Now we actually have access to raw clipboard data so:
-		for (const item of clipboardContents) {
+		const items_with_possible_serialized_states = clipboardContents.filter(x => x.types.includes('text/plain'));
+		const items_with_possible_raw_pngs = clipboardContents.filter(x => x.types.includes('image/png'));
+		let found_valid_serialized_states = false;
+		for (const item of items_with_possible_serialized_states) {
 			/// First let's check if we have a fully serialized state in there from our own copy
-			if(item.types.includes('text/plain')){
-				console.log("Found text blob");
-				const textBlob = await item.getType('text/plain');
-				const clipboardText = await textBlob.text();
-				if(clipboardText.startsWith(clipboardHeader))
-				{
-					const serializedData = clipboardText.slice(clipboardHeader.length);
-					const state = await DmiState.deserialize(JSON.parse(serializedData));
-					if(state.width == dmi.width && state.height == dmi.height){
+			console.log("Found text blob");
+			const textBlob = await item.getType('text/plain');
+			const clipboardText = await textBlob.text();
+			if (clipboardText.startsWith(clipboardHeader)) {
+				const serializedData = clipboardText.slice(clipboardHeader.length);
+				const state = await DmiState.deserialize(JSON.parse(serializedData));
+				if (state.width == dmi.width && state.height == dmi.height) {
+					addState(state);
+				}
+				else {
+					// TODO: Just resize as needed
+					messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted state (${state.width}x${state.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
+				}
+				found_valid_serialized_states = true;
+			}
+		}
+		//We don't want to try to add png blobs since they always have less info than our direct data, they're just there for pasting into external editors
+		if(found_valid_serialized_states){
+			return;
+		}
+
+		for (const item of items_with_possible_raw_pngs) {
+			/// Next check if we have a png data blob 
+			const data = await item.getType('image/png');
+			const ab = await data.arrayBuffer();
+			const fileData = new Uint8Array(ab);
+			try {
+				// These are usually just pngs, but in theory (according to chromium docs, but this might be different in electron/vscode) these can also have metadata so we try to parse as dmi
+				const dmi_or_png = await Dmi.parse(fileData);
+				if (dmi_or_png.width == dmi.width && dmi_or_png.height == dmi.height) {
+					for (const state of dmi_or_png.states) {
 						addState(state);
 					}
-					else
-					{
-						// TODO: Just resize as needed
-						messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted image (${state.width}x${state.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
-					}
-					return; //We don't want to try to add png blobs since they always have less info than our direct data
 				}
-			}
-			/// Next check if we have a png data blob 
-			if(item.types.includes('image/png')){
-				const data = await item.getType('image/png');
-				const ab = await data.arrayBuffer();
-				const fileData = new Uint8Array(ab);
-				try {
-					// These are usually just pngs, but in theory (according to chromium docs, but this might be different in electron/vscode) these can also have metadata so we try to parse as dmi
-					const dmi_or_png = await Dmi.parse(fileData);
-					if (dmi_or_png.width == dmi.width && dmi_or_png.height == dmi.height) {
-						for (const state of dmi_or_png.states) {
-							addState(state);
-						}
-					}
-					else
-					{
-						// TODO: Just resize as needed
-						messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted image (${dmi_or_png.width}x${dmi_or_png.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
-					}
-				} catch (error) {
-					// Parse failed so it's some mangled metadata, just give up
-					return;
+				else {
+					// TODO: Just resize as needed
+					messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted raw image (${dmi_or_png.width}x${dmi_or_png.height}) does not match size of DMI (${dmi.width}x${dmi.height})` });
 				}
+			} catch (error) {
+				// Parse failed so it's some mangled metadata, just give up
+				return;
 			}
 		}
 	}, [dmi]);
