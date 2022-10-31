@@ -4,7 +4,7 @@ import { DmiState, Dirs, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
 import { buildClassName, useGlobalHandler } from "./useHelpers";
 import Image from 'image-js';
-import { messageHandler, vscode } from "./state";
+import { messageHandler } from "./state";
 import { MessageType } from "../../shared/messaging";
 
 type ListStateDisplayProps = {
@@ -114,8 +114,7 @@ export const StateList: React.FC<StateListProps> = (props) => {
 			if (prospectiveState.width == dmi.width && prospectiveState.height == dmi.height) {
 				imagesFromFiles.push({ image: prospectiveState, name : file.name});
 			}
-			else
-			{
+			else {
 				//Don't display errors here since these values might not be used at all
 				raw_clipboard_errors.push(`Size of pasted image (${prospectiveState.width}x${prospectiveState.height}) does not match size of DMI (${dmi.width}x${dmi.height})`);
 			}
@@ -130,7 +129,7 @@ export const StateList: React.FC<StateListProps> = (props) => {
 				console.log(`Adddingfrom clipboardData.file`);
 				addFreshState(found.image, found.name);
 			}
-			for(const error_message of raw_clipboard_errors){
+			for (const error_message of raw_clipboard_errors) {
 				// TODO: Just resize as needed
 				messageHandler.sendEvent({ type: MessageType.Alert, text: error_message });
 			}
