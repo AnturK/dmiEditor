@@ -4,6 +4,8 @@ import { DmiState, Dirs, DirNames, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
 import { Image } from 'image-js';
 import { useGlobalHandler } from "./useHelpers";
+import { messageHandler } from "./state";
+import { MessageType } from "../../shared/messaging";
 
 type StateDetailViewProps = {
 	state: DmiState
@@ -162,6 +164,7 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 		/// We do it first because rejected navigator.clipboard.read also clears this list. Don't ask why.
 		const data = e.clipboardData!;
 		const imagesFromFiles: Array<{image: Image, name : string}> = [];
+		const raw_clipboard_errors = [];
 		for (let index = 0; index < data.files.length; index++) {
 			const file = data.files.item(index);
 			if (file?.type !== 'image/png')
@@ -170,6 +173,10 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 			const prospectiveState = await Image.load(fileData);
 			if (prospectiveState.width == state.width && prospectiveState.height == state.height) {
 				imagesFromFiles.push({ image: prospectiveState, name : file.name});
+			}
+			else {
+				//Don't display errors here since these values might not be used at all
+				raw_clipboard_errors.push(`Size of pasted image (${prospectiveState.width}x${prospectiveState.height}) does not match size of DMI (${state.width}x${state.height})`);
 			}
 		}
 		/// Next, actually try to read raw clipboard
@@ -181,6 +188,10 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 			for (const found of imagesFromFiles) {
 				replaceFrame(selectedFrame,found.image);
 				break;
+			}
+			for (const error_message of raw_clipboard_errors) {
+				// TODO: Just resize as needed
+				messageHandler.sendEvent({ type: MessageType.Alert, text: error_message });
 			}
 			return;
 		}
@@ -197,6 +208,9 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 					if (dmi_or_png.width == state.width && dmi_or_png.height == state.height) {
 						replaceFrame(selectedFrame,dmi_or_png.states[0].frames[0]);
 						return;
+					} else {
+						// TODO: Just resize as needed
+						messageHandler.sendEvent({ type: MessageType.Alert, text: `Size of pasted raw image (${dmi_or_png.width}x${dmi_or_png.height}) does not match size of DMI (${state.width}x${state.height})` });
 					}
 				} catch (error) {
 					// Parse failed so it's some mangled metadata, just give up
