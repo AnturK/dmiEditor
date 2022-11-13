@@ -82,7 +82,7 @@ export const StateDetailView: React.FC<StateDetailViewProps> = (props) => {
 		const value_as_number = parseFloat(new_value);
 		if(isNaN(value_as_number))
 			return;
-		const updatedDelays = filledDelays.map((value,index) => index == delay_index ? parseFloat(new_value) : value);
+		const updatedDelays = filledDelays.map((value,index) => index == delay_index ? Math.abs(parseFloat(new_value)) : value);
 		const new_state = props.state.clone();
 		new_state.delays = updatedDelays;
 		new_state.mark_dirty();
