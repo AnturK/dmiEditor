@@ -1,3 +1,7 @@
+# Version 1.0.5
+- Adds alert when pasting frames of wrong size
+- Allows entering decimal values for frame delays
+
 # Version 1.0.4
 - Adds alerts when pasting states/pngs of wrong size
 - Improves frame grid css 
