@@ -1,87 +1,87 @@
 {
-	"name": "dmi-editor",
-	"displayName": "DMI Editor",
-	"description": "Custom Editor for Byond DMI files",
-	"version": "1.0.5",
-	"publisher": "anturk",
-	"private": true,
-	"license": "GPL-3.0",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/AnturK/dmiEditor"
-	},
-	"keywords": [
-		"DMI",
-		"Editor",
-		"Byond",
-		"ss13"
-	],
-	"engines": {
-		"vscode": "^1.52.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onCustomEditor:dmiEditor.dmiEditor",
-		"onCommand:dmiEditor.dmiEditor.new"
-	],
-	"main": "./dist/extension.js",
-	"contributes": {
-		"customEditors": [
-			{
-				"viewType": "dmiEditor.dmiEditor",
-				"displayName": "DMI Editor",
-				"priority": "default",
-				"selector": [
-					{
-						"filenamePattern": "*.dmi"
-					}
-				]
-			}
-		],
-		"configuration": {
-			"title": "Dmi Editor",
-			"properties": {
-				"dmiEditor.defaultZoom": {
-					"type": "integer",
-					"default": 2,
-					"description": "Default zoom level for Dmi editor"
-				}
-			}
-		},
-		"commands": [
-			{
-				"command": "dmiEditor.dmiEditor.new.new",
-				"title": "Create new dmi file",
-				"category": "DMI"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile --minify",
-		"compile": "tsc -noEmit && node .esbuild.config.js",
-		"lint": "eslint src --ext ts",
-		"watch": "node .esbuild.config.js --watch"
-	},
-	"devDependencies": {
-		"@types/node": "^12.12.0",
-		"@types/react": "^18.0.8",
-		"@types/react-dom": "^18.0.0",
-		"@types/vscode": "^1.52.0",
-		"@typescript-eslint/eslint-plugin": "^5.19.0",
-		"@typescript-eslint/parser": "^5.19.0",
-		"esbuild": "^0.14.38",
-		"eslint": "^8.13.0",
-		"typescript": "^4.6.3"
-	},
-	"dependencies": {
-		"@lunapaint/png-codec": "github:AnturK/png-codec#dmi",
-		"@pdf-lib/upng": "^1.0.1",
-		"@vscode/codicons": "^0.0.29",
-		"@vscode/webview-ui-toolkit": "^1.0.0",
-		"image-js": "^0.34.0",
-		"react": "^18.1.0",
-		"react-dom": "^18.1.0"
-	}
+  "name": "dmi-editor",
+  "displayName": "DMI Editor",
+  "description": "Custom Editor for Byond DMI files",
+  "version": "1.0.6",
+  "publisher": "anturk",
+  "private": true,
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AnturK/dmiEditor"
+  },
+  "keywords": [
+    "DMI",
+    "Editor",
+    "Byond",
+    "ss13"
+  ],
+  "engines": {
+    "vscode": "^1.52.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCustomEditor:dmiEditor.dmiEditor",
+    "onCommand:dmiEditor.dmiEditor.new"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "dmiEditor.dmiEditor",
+        "displayName": "DMI Editor",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.dmi"
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "Dmi Editor",
+      "properties": {
+        "dmiEditor.defaultZoom": {
+          "type": "integer",
+          "default": 2,
+          "description": "Default zoom level for Dmi editor"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "dmiEditor.dmiEditor.new.new",
+        "title": "Create new dmi file",
+        "category": "DMI"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile --minify",
+    "compile": "tsc -noEmit && node .esbuild.config.js",
+    "lint": "eslint src --ext ts",
+    "watch": "node .esbuild.config.js --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.0",
+    "@types/react": "^18.0.8",
+    "@types/react-dom": "^18.0.0",
+    "@types/vscode": "^1.52.0",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "esbuild": "^0.14.38",
+    "eslint": "^8.13.0",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "@lunapaint/png-codec": "github:AnturK/png-codec#dmi",
+    "@pdf-lib/upng": "^1.0.1",
+    "@vscode/codicons": "^0.0.29",
+    "@vscode/webview-ui-toolkit": "^1.0.0",
+    "image-js": "^0.34.0",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0"
+  }
 }

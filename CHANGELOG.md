@@ -1,3 +1,6 @@
+# Version 1.0.6
+- Fixes saving stateless dmis
+
 # Version 1.0.5
 - Adds alert when pasting frames of wrong size
 - Allows entering decimal values for frame delays
