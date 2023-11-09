@@ -31,7 +31,7 @@ export class DmiState {
 	frames_encoded: string[];
 	delays: number[];
 	hotspots: [number,number][] | null;
-	directional_previews: Record<Dirs,string>;
+	directional_previews: Partial<Record<Dirs,string>>;
 
 	constructor(name: string, loop = 0, rewind = false, movement = false, dirs = 1) {
 		this.name = name;
@@ -270,10 +270,15 @@ export class Dmi {
 
 	buildData(){
 		const num_frames = this.states.map(x => x.frames.length).reduce((prev,current) => prev+current,0);
+		// For stateless dmis, we just return black width*height png to keep with byond editor.
+		if(num_frames === 0){
+			const blank_image = DmiState.empty_frame(this.width,this.height) as unknown as ImageDurr & Image;
+			const data = Uint8Array.from(blank_image.data);
+			return { data: data, width:this.width, height:this.height };
+		}
 		const sqrt = Math.ceil(Math.sqrt(num_frames));
 		const png_width = sqrt * this.width;
 		const png_height = Math.ceil(num_frames / sqrt) * this.height;
-
 		const result_image = DmiState.empty_frame(png_width,png_height) as unknown as ImageDurr & Image;
 
 		let i = 0;
@@ -287,7 +292,7 @@ export class Dmi {
 		}
 
 		const data = Uint8Array.from(result_image.data);
-		return {data: data,width:png_width,height:png_height};
+		return {data: data, width:png_width, height:png_height};
 	}
 
 	async getFileData() {
