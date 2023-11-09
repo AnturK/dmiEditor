@@ -1,5 +1,6 @@
 # Ignore everything but..
 */**
+*
 
 # extension files
 !.vscodeignore
