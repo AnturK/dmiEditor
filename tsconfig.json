@@ -1,19 +1,15 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es2020",
-		"lib": [
-			"ES2020",
-			"DOM",
-			"DOM.Iterable"
-		],
-		"outDir": "out",
-		"esModuleInterop": true,
-		"sourceMap": true,
-		"jsx": "react",
-		"strict": true,
-		"forceConsistentCasingInFileNames": true,
-		"importHelpers": true
-	},
-	"exclude": ["node_modules", ".vscode-test"],
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2020",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "outDir": "out",
+        "esModuleInterop": true,
+        "sourceMap": true,
+        "jsx": "react",
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": true
+    },
+    "exclude": ["node_modules", ".vscode-test"]
 }

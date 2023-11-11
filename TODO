@@ -8,4 +8,3 @@ Autosplitting bigger pasted pngs into states/frames
 Simplify all the data formats / encoder mess + performance pass on initial render
 Improve css
 Look into replacing esbuild with webpack/gulp so you can drop directly appending codicons
-Run this through some more restrictive linter/prettier.

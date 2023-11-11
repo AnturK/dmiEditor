@@ -4,6 +4,6 @@ Editor for [BYOND](https://www.byond.com/) DMI files. Allows for previewing and 
 
 ## Features:
 
-* Editing state names/directions/delays/other metadata
-* Pasting png files as new states/frames 
-* Resizing dmis
+-   Editing state names/directions/delays/other metadata
+-   Pasting png files as new states/frames
+-   Resizing dmis

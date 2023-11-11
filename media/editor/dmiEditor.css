@@ -1,160 +1,158 @@
 .editor {
-	--frameBackground: inherit;
-	--dmiWidth: 32px;
-	--dmiHeight: 32px;
-	--zoomFactor: 1;
-	--zoomedDmiWidth: 32px;
-	--zoomedDmiHeight: 32px;
-	--frameGridRows: 1;
-	--frameGridColumns: 1;
+    --frameBackground: inherit;
+    --dmiWidth: 32px;
+    --dmiHeight: 32px;
+    --zoomFactor: 1;
+    --zoomedDmiWidth: 32px;
+    --zoomedDmiHeight: 32px;
+    --frameGridRows: 1;
+    --frameGridColumns: 1;
 
-	user-select: none;
+    user-select: none;
 }
 
 .infoBar {
-	display: flex;
-	flex-direction: row;
-	gap: 1em;
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
 }
 
 .infoBarSection {
-	flex: 0 1 auto;
-	gap: 1em;
-	display: flex;
-	flex-flow: row;
-	align-self: center;
-	align-items: center;
+    flex: 0 1 auto;
+    gap: 1em;
+    display: flex;
+    flex-flow: row;
+    align-self: center;
+    align-items: center;
 }
 
 .stateList {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .stateList > * {
-	margin: 10px;
-	flex: 0 0 auto;
+    margin: 10px;
+    flex: 0 0 auto;
 }
 
-.statePreviewBox:hover{
-	background-color: var(--vscode-button-hoverBackground)
+.statePreviewBox:hover {
+    background-color: var(--vscode-button-hoverBackground);
 }
 
 .statePreviewBox.selected {
-	background-color: var(--vscode-editor-selectionBackground)
+    background-color: var(--vscode-editor-selectionBackground);
 }
 
 .statePreviewBox.selected:hover {
-	background-color: var(--vscode-button-hoverBackground)
+    background-color: var(--vscode-button-hoverBackground);
 }
 
-.statePreviewBox .statePreview{
-	border: 1px solid black;
-	margin: 0 auto;
+.statePreviewBox .statePreview {
+    border: 1px solid black;
+    margin: 0 auto;
 }
 
 .statePreviewBox .stateName {
-	font-weight: bolder;
-	text-align: center;
-	user-select: text;
-	max-width: var(--zoomedDmiWidth);
-	overflow-wrap: break-word;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
+    font-weight: bolder;
+    text-align: center;
+    user-select: text;
+    max-width: var(--zoomedDmiWidth);
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .statePreviewBox .stateName.noname {
-	font-weight: normal;
-	font-style: italic;
+    font-weight: normal;
+    font-style: italic;
 }
 
 .statePreviewBox .duplicate {
-	text-align: center;
-	font-style: italic;
-	color:var(--vscode-errorForeground);
-	max-width: var(--zoomedDmiWidth);
-	overflow-wrap: break-word;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
+    text-align: center;
+    font-style: italic;
+    color: var(--vscode-errorForeground);
+    max-width: var(--zoomedDmiWidth);
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .frame {
-	width: var(--zoomedDmiWidth);
-	height: var(--zoomedDmiHeight);
-	min-width: var(--zoomedDmiWidth);
-	min-height: var(--zoomedDmiHeight);
-	background: var(--frameBackground);
-	image-rendering: pixelated;
+    width: var(--zoomedDmiWidth);
+    height: var(--zoomedDmiHeight);
+    min-width: var(--zoomedDmiWidth);
+    min-height: var(--zoomedDmiHeight);
+    background: var(--frameBackground);
+    image-rendering: pixelated;
 }
 
 .zoom {
-	font-size: large;
-	padding-left: 0.5rem;
-	padding-right: 0.5rem;
+    font-size: large;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .zoom:hover {
-	background-color: var(--vscode-button-hoverBackground)
+    background-color: var(--vscode-button-hoverBackground);
 }
 
 .newState {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.newState:hover{
-	background-color: var(--vscode-button-hoverBackground)
+.newState:hover {
+    background-color: var(--vscode-button-hoverBackground);
 }
 
 .newState .codicon {
-	font-size: var(--zoomedDmiHeight) !important; 
+    font-size: var(--zoomedDmiHeight) !important;
 }
-
 
 .dirGrid {
-	display: grid;
-	grid-template-columns: repeat(3,var(--zoomedDmiWidth));
-	grid-template-rows: repeat(3,var(--zoomedDmiHeight));
-	gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, var(--zoomedDmiWidth));
+    grid-template-rows: repeat(3, var(--zoomedDmiHeight));
+    gap: 1rem;
 }
 
-.singleDirGrid{
-	width: var(--zoomedDmiWidth);
-	height: var(--zoomedDmiHeight);
+.singleDirGrid {
+    width: var(--zoomedDmiWidth);
+    height: var(--zoomedDmiHeight);
 }
-
 
 .frameGrid {
-	display: grid;
-	grid-template-columns: repeat(var(--frameGridColumns), min-content);
-	grid-template-rows: repeat(var(--frameGridRows), min-content);
-	gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(var(--frameGridColumns), min-content);
+    grid-template-rows: repeat(var(--frameGridRows), min-content);
+    gap: 1rem;
 }
 
 .gridHeader {
-	text-align: center;
-	align-self: center;
-	min-width: var(--zoomedDmiWidth);
+    text-align: center;
+    align-self: center;
+    min-width: var(--zoomedDmiWidth);
 }
 
 .gridElement {
-	padding: 1em;
+    padding: 1em;
 }
 
 .gridElement.selected {
-	background-color: var(--vscode-editor-selectionBackground)
+    background-color: var(--vscode-editor-selectionBackground);
 }
 
 .gridElement.selected:hover {
-	background-color: var(--vscode-button-hoverBackground)
+    background-color: var(--vscode-button-hoverBackground);
 }
 
 .gridElement:hover {
-	background-color: var(--vscode-button-hoverBackground)
+    background-color: var(--vscode-button-hoverBackground);
 }
