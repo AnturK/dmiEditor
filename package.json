@@ -2,8 +2,22 @@
     "name": "dmi-editor",
     "displayName": "DMI Editor",
     "description": "Custom Editor for Byond DMI files",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "publisher": "anturk",
+    "contributors": [
+        {
+            "name": "AnturK",
+            "url": "https://github.com/AnturK"
+        },
+        {
+            "name": "Drathek",
+            "url": "https://github.com/Drulikar"
+        },
+        {
+            "name": "_Elar_",
+            "url": "https://github.com/AlexMorgan3817"
+        }
+    ],
     "private": true,
     "license": "GPL-3.0",
     "repository": {
