@@ -2,7 +2,7 @@
     "name": "dmi-editor",
     "displayName": "DMI Editor",
     "description": "Custom Editor for Byond DMI files",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "publisher": "anturk",
     "contributors": [
         {
