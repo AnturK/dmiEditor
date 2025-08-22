@@ -1,5 +1,5 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DmiState, Dirs, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
 import { buildClassName, useGlobalHandler } from "./useHelpers";
@@ -12,14 +12,21 @@ type ListStateDisplayProps = {
     selected: boolean;
     hidden: boolean;
     duplicate: boolean;
+    editing?: boolean;
     delete: () => void;
     select: () => void;
     open: () => void;
+    onEditingStateChanged?: (value: boolean) => void;
     modify: (modified_state: DmiState) => void;
 };
 
 // icon state preview on the state list
 const ListStateDisplay: React.FC<ListStateDisplayProps> = props => {
+    const [editing, setEditing] = useState(false);
+    useEffect(() => {
+        if (props.onEditingStateChanged)
+            props.onEditingStateChanged(editing);
+    }, [editing, props.onEditingStateChanged]);
     const iconState = props.state;
     const listClassName = buildClassName({
         statePreviewBox: true,
@@ -40,13 +47,16 @@ const ListStateDisplay: React.FC<ListStateDisplayProps> = props => {
         new_state.name = value;
         props.modify(new_state);
     };
-
+    const _renaming_node = (editing: boolean) => {
+        setEditing(editing);
+    };
     return (
         <div className={listClassName} onClick={handleClick} hidden={props.hidden}>
             <EditableField
                 value={iconState.name}
                 displayValue={displayedName}
                 onChange={updateName}
+                onEditingStateChanged={_renaming_node}
                 className={nameFieldClass}
             />
             {props.duplicate && <div className="duplicate">Duplicate</div>}
@@ -66,6 +76,7 @@ type StateListProps = {
 
 export const StateList: React.FC<StateListProps> = props => {
     const [selectedState, setSelectedState] = useState<number | null>(null);
+    const [renamingNode, setRenamingNode] = useState(false);
     const dmi = props.dmi;
 
     const delete_state = (state_index: number) => () => {
@@ -102,8 +113,15 @@ export const StateList: React.FC<StateListProps> = props => {
     useGlobalHandler<ClipboardEvent>(
         "paste",
         async e => {
+            try{
+                if((e.target as Element).localName == "vscode-text-field")
+                    return;
+            }
+            catch(exception){
+                console.log("Not an element");
+                console.log(exception);
+            }
             e.preventDefault();
-
             /// First we check png files copypasted wholesale from system - ie windows file explorer copy on a some.png file because navigator.clipboard.read() just panics in this case.
             /// We do it first because rejected navigator.clipboard.read also clears this list. Don't ask why.
             const data = e.clipboardData!;
@@ -169,9 +187,8 @@ export const StateList: React.FC<StateListProps> = props => {
                 }
             }
             //We don't want to try to add png blobs since they always have less info than our direct data, they're just there for pasting into external editors
-            if (found_valid_serialized_states) {
+            if (found_valid_serialized_states)
                 return;
-            }
 
             for (const item of items_with_possible_raw_pngs) {
                 /// Next check if we have a png data blob
@@ -182,9 +199,8 @@ export const StateList: React.FC<StateListProps> = props => {
                     // These are usually just pngs, but in theory (according to chromium docs, but this might be different in electron/vscode) these can also have metadata so we try to parse as dmi
                     const dmi_or_png = await Dmi.parse(fileData);
                     if (dmi_or_png.width == dmi.width && dmi_or_png.height == dmi.height) {
-                        for (const state of dmi_or_png.states) {
+                        for (const state of dmi_or_png.states)
                             addState(state);
-                        }
                     } else {
                         // TODO: Just resize as needed
                         messageHandler.sendEvent({
@@ -202,23 +218,43 @@ export const StateList: React.FC<StateListProps> = props => {
     );
 
     const copyToClipboard = async (e: ClipboardEvent) => {
-        if (selectedState != null) {
-            e.preventDefault();
-            const state = dmi.states[selectedState];
-            const serializedState = JSON.stringify(state.serialize());
-            const prefixedSerializedState = `${clipboardHeader}${serializedState}`;
-            const imageBlob = await state.buildComposite();
-            const textBlob = new Blob([prefixedSerializedState], { type: "text/plain" });
-            const item = new ClipboardItem({ "image/png": imageBlob, "text/plain": textBlob });
-            navigator.clipboard.write([item]);
-        }
+        if (selectedState == null)
+            return;
+        e.preventDefault();
+        const state = dmi.states[selectedState];
+        const serializedState = JSON.stringify(state.serialize());
+        const prefixedSerializedState = `${clipboardHeader}${serializedState}`;
+        const imageBlob = await state.buildComposite();
+        const textBlob = new Blob([prefixedSerializedState], { type: "text/plain" });
+        const item = new ClipboardItem({ "image/png": imageBlob, "text/plain": textBlob });
+        navigator.clipboard.write([item]);
     };
 
-    useGlobalHandler<ClipboardEvent>("copy", e => copyToClipboard(e), [selectedState, dmi]);
+    useGlobalHandler<ClipboardEvent>("copy", e => {
+        if(renamingNode)
+            return;
+        try{
+            if((e.target as Element).localName == "vscode-text-field")
+                return;
+        }
+        catch(exception){
+            console.log("Not an element");
+            console.log(exception);
+        }
+        copyToClipboard(e);
+    }, [selectedState, dmi, renamingNode]);
 
     useGlobalHandler<ClipboardEvent>(
         "cut",
         async e => {
+            try{
+                if((e.target as Element).localName == "vscode-text-field")
+                    return;
+            }
+            catch(exception){
+                console.log("Not an element");
+                console.log(exception);
+            }
             if (selectedState != null) {
                 e.preventDefault();
                 copyToClipboard(e);
@@ -233,12 +269,12 @@ export const StateList: React.FC<StateListProps> = props => {
         e => {
             switch (e.code) {
                 case "Delete":
-                    if (selectedState !== null) {
-                        if (document.activeElement?.nodeName == "VSCODE-TEXT-FIELD")
-                            //move this to some context ?
-                            break;
-                        delete_state(selectedState)();
-                    }
+                    if (selectedState === null)
+                        break;
+                    if (document.activeElement?.nodeName == "VSCODE-TEXT-FIELD")
+                        //move this to some context ?
+                        break;
+                    delete_state(selectedState)();
                     break;
             }
         },
@@ -257,6 +293,7 @@ export const StateList: React.FC<StateListProps> = props => {
                         select={() => setSelectedState(index)}
                         open={() => props.onOpen(state)}
                         selected={selectedState == index}
+                        onEditingStateChanged={(value: boolean) => {setRenamingNode(value);}}
                         duplicate={
                             !!dmi.states.find(
                                 other_state =>
