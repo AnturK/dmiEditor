@@ -77,7 +77,8 @@ jobs:
           TAG_NAME: ${{ github.event.release.tag_name }}
           CONTENT: ${{ steps.build_changelog.outputs.changelog }}
         run: |
-          gh release edit $TAG_NAME --notes $CONTENT --draft=false
+          echo "$CONTENT" >> temp_changelog
+          gh release edit $TAG_NAME --notes-from temp_changelog --draft=false
 
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@v2
