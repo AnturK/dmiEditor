@@ -1,6 +1,10 @@
 # Version  1.0.9
-- no changes# Version  1.0.8
-- no changes# Version  1.0.7
+- no changes
+
+# Version  1.0.8
+- no changes
+
+# Version  1.0.7
 ## 📦 Uncategorized
 
 - Fixing of sprites duplication on copy pasting during renaming + Overall reactivity + Updating packages (npm audit fix)

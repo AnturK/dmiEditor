@@ -45,6 +45,7 @@ jobs:
           mv CHANGELOG.md OLD_CHANGELOG
           echo "# Version  ${{ steps.extract_version.outputs.version }}" >> CHANGELOG.md
           cat NEW_CHANGELOG >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
           cat OLD_CHANGELOG >> CHANGELOG.md
           rm NEW_CHANGELOG
           rm OLD_CHANGELOG
