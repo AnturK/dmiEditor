@@ -1,3 +1,9 @@
+# Version  1.0.7
+## 📦 Uncategorized
+
+- Fixing of sprites duplication on copy pasting during renaming + Overall reactivity + Updating packages (npm audit fix)
+   - PR: #10
+
 # Version 1.0.6
 
 -   Fixes saving stateless dmis
