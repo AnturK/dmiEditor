@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as ReactDOM from "react-dom/client";
 import "./dmiEditor.css";
 import * as select from "./state";
-import { Dmi, DmiState } from "../../shared/dmi";
+import { Dirs, Dmi, DmiState } from "../../shared/dmi";
 import {
     DocumentChangedEventMessage,
     MessageType,
@@ -24,6 +24,23 @@ const Editor: React.FC = () => {
     const saveZoom = (value: number) => {
         select.sessionPersistentData.setZoom(value);
         setZoom(value);
+    };
+
+    const [direction, setDirection] = useState(Dirs.SOUTH);
+    const ROTATION_DIRECTIONS = [
+        Dirs.SOUTH,
+        Dirs.WEST,
+        Dirs.NORTH,
+        Dirs.EAST
+    ];
+    const cycleDirection = (counterclockwise: boolean) => {
+        let index = ROTATION_DIRECTIONS.indexOf(direction);
+        counterclockwise ? index-- : index++;
+        if (index < 0)
+            index = ROTATION_DIRECTIONS.length - 1;
+        else if (index > ROTATION_DIRECTIONS.length - 1)
+            index = 0;
+        setDirection(ROTATION_DIRECTIONS[index]);
     };
 
     const [openStateIndex, setOpenStateIndexRaw] = useState<number | null>(null);
@@ -155,6 +172,16 @@ const Editor: React.FC = () => {
             </VSCodeButton>
         </div>
     );
+    const dirDisplay = (
+        <div>
+            <VSCodeButton appearance="icon" onClick={() => cycleDirection(true)}>
+                <span className="codicon codicon-debug-step-back" />
+            </VSCodeButton>
+            <VSCodeButton appearance="icon" onClick={() => cycleDirection(false)}>
+                <span className="codicon codicon-debug-step-over" />
+            </VSCodeButton>
+        </div>
+    );
     const backgroundDisplay = (
         <VSCodeButton appearance="icon" onClick={toggleBackground}>
             <span className="codicon codicon-color-mode" />
@@ -179,10 +206,13 @@ const Editor: React.FC = () => {
             <StateList
                 filterString={searchText}
                 dmi={dmi}
+                direction={direction}
                 pushUpdate={pushDmiUpdate}
                 onOpen={state => setOpenStateIndex(dmi.states.findIndex(x => x === state))}
             />
         );
+        // Direction buttons
+        infoBarElements.push(dirDisplay);
         //Search bar
         infoBarElements.push(
             <VSCodeTextField
