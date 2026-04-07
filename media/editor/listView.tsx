@@ -13,6 +13,7 @@ type ListStateDisplayProps = {
     hidden: boolean;
     duplicate: boolean;
     editing?: boolean;
+    direction: Dirs;
     delete: () => void;
     select: () => void;
     open: () => void;
@@ -61,7 +62,7 @@ const ListStateDisplay: React.FC<ListStateDisplayProps> = props => {
             />
             {props.duplicate && <div className="duplicate">Duplicate</div>}
             <div className="statePreview" onDoubleClick={props.open}>
-                <img className="frame" src={iconState.generate_preview(Dirs.SOUTH)} />
+                <img className="frame" src={iconState.generate_preview(props.direction)} />
             </div>
         </div>
     );
@@ -70,6 +71,7 @@ const ListStateDisplay: React.FC<ListStateDisplayProps> = props => {
 type StateListProps = {
     dmi: Dmi;
     filterString: string;
+    direction: Dirs;
     pushUpdate: (newDmi: Dmi) => void;
     onOpen: (state: DmiState) => void;
 };
@@ -288,6 +290,7 @@ export const StateList: React.FC<StateListProps> = props => {
                     <ListStateDisplay
                         key={index}
                         state={state}
+                        direction={props.direction}
                         modify={modify_state(index)}
                         delete={delete_state(index)}
                         select={() => setSelectedState(index)}
