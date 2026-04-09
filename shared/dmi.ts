@@ -203,7 +203,7 @@ export class DmiState {
                 this.directional_previews[dir] = this.get_frame_encoded(0, dir);
             }
             const frame_data = [...Array(this.framecount)].map(
-                (_, index) => this.get_frame(index, dir).getRGBAData().buffer
+                (_, index) => this.get_frame(index, dir).getRGBAData().buffer as ArrayBuffer
             );
             const dels = this.delays.map(delay => delay * 100);
             const data = UPNG.encode(frame_data, this.width, this.height, 0, dels);
