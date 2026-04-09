@@ -369,7 +369,7 @@ export class DmiEditorProvider implements vscode.CustomEditorProvider<DmiDocumen
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} blob: data:; font-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link href="${styleUri}" rel="stylesheet" />
-				<link href="${codiconsUri}" rel="stylesheet" />
+				<link href="${codiconsUri}" rel="stylesheet" id="vscode-codicon-stylesheet"/>
 				<script nonce="${nonce}" src="${scriptUri}" defer></script>
 				<title>DMI Editor</title>
 			</head>

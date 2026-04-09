@@ -8,7 +8,7 @@ import {
     MessageType,
     ReadyResponseMessage
 } from "../../shared/messaging";
-import { VSCodeButton, VSCodeDivider, VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton, VscodeDivider, VscodeTextfield, VscodeIcon } from "@vscode-elements/react-elements";
 import { StateDetailView } from "./detailView";
 import { StateList } from "./listView";
 
@@ -147,47 +147,38 @@ const Editor: React.FC = () => {
     const sizeDisplay = (
         <>
             <div>Width</div>
-            <VSCodeTextField
+            <VscodeTextfield
                 value={dmi.width.toString()}
-                size={3}
+                style={{width:'3em'}}
                 name="width"
                 onChange={e => changeWidth((e.target as HTMLInputElement).value)}
             />
             <div>Height</div>
-            <VSCodeTextField
+            <VscodeTextfield
                 value={dmi.height.toString()}
-                size={3}
+                style={{width:'3em'}}
                 name="height"
                 onChange={e => changeHeight((e.target as HTMLInputElement).value)}
             />
         </>
     );
+
     const zoomDisplay = (
         <div>
-            <VSCodeButton appearance="icon" onClick={() => saveZoom(zoom + 1)}>
-                <span className="codicon codicon-zoom-in" />
-            </VSCodeButton>
-            <VSCodeButton appearance="icon" onClick={() => saveZoom(Math.max(1, zoom - 1))}>
-                <span className="codicon codicon-zoom-out" />
-            </VSCodeButton>
+            <VscodeButton icon="zoom-in" onClick={() => saveZoom(zoom + 1)}/>
+            <VscodeButton icon="zoom-out" onClick={() => saveZoom(Math.max(1, zoom - 1))}/>
         </div>
     );
+
+    const backgroundDisplayButton = (<VscodeButton icon="color-mode" onClick={toggleBackground} />);
+
     const dirDisplay = (
         <div>
-            <VSCodeButton appearance="icon" onClick={() => cycleDirection(true)}>
-                <span className="codicon codicon-debug-step-back" />
-            </VSCodeButton>
-            <VSCodeButton appearance="icon" onClick={() => cycleDirection(false)}>
-                <span className="codicon codicon-debug-step-over" />
-            </VSCodeButton>
+            <VscodeButton icon="debug-step-back" onClick={() => cycleDirection(true)}/>
+            <VscodeButton icon="debug-step-over" onClick={() => cycleDirection(false)}/>
         </div>
     );
-    const backgroundDisplay = (
-        <VSCodeButton appearance="icon" onClick={toggleBackground}>
-            <span className="codicon codicon-color-mode" />
-        </VSCodeButton>
-    );
-    const infoBarElements = [sizeDisplay, zoomDisplay, backgroundDisplay];
+    const infoBarElements = [sizeDisplay, zoomDisplay, backgroundDisplayButton];
 
     let mainContent = null;
     if (openStateIndex != null) {
@@ -199,7 +190,7 @@ const Editor: React.FC = () => {
         );
         //Close state view button
         infoBarElements.push(
-            <VSCodeButton onClick={() => setOpenStateIndex(null)}>Close</VSCodeButton>
+            <VscodeButton onClick={() => setOpenStateIndex(null)}>Close</VscodeButton>
         );
     } else {
         mainContent = (
@@ -215,23 +206,23 @@ const Editor: React.FC = () => {
         infoBarElements.push(dirDisplay);
         //Search bar
         infoBarElements.push(
-            <VSCodeTextField
+            <VscodeTextfield
                 value={searchText}
                 onInput={e => setSearchText((e.target as HTMLInputElement).value)}
             >
-                <span slot="start" className="codicon codicon-search"></span>
-            </VSCodeTextField>
+                <VscodeIcon slot="content-before" name="search" title="search"></VscodeIcon>
+            </VscodeTextfield>
         );
     }
 
     return (
         <div className="editor" style={dynamicStyle} onContextMenu={e => e.preventDefault()}>
             <div className="infoBar">
-                {infoBarElements.map(e => (
-                    <div className="infoBarSection">{e}</div>
+                {infoBarElements.map((e,i) => (
+                    <div key={`info${i}`} className="infoBarSection">{e}</div>
                 ))}
             </div>
-            <VSCodeDivider />
+            <VscodeDivider />
             {mainContent}
         </div>
     );
