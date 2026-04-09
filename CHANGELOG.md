@@ -1,3 +1,12 @@
+# Version  1.0.10
+## 📦 Uncategorized
+
+- Add buttons to rotate sprite previews
+   - PR: #12
+- Switch from @vscode/webview-ui-toolkit to @vscode-elements/react-elements
+   - PR: #13
+
+
 # Version  1.0.9
 - no changes
 
