@@ -1,4 +1,4 @@
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
+import { VscodeTextfield } from "@vscode-elements/react-elements";
 import React, { useEffect, useRef, useState } from "react";
 import { useGlobalHandler } from "./useHelpers";
 
@@ -21,8 +21,8 @@ export const EditableField: React.FC<EditableFieldsProps> = props => {
             onEditingStateChanged(editing);
         }
     }, [editing, onEditingStateChanged]);
-    const pushChange = () => {
-        props.onChange((inputRef?.current as unknown as HTMLInputElement).value);
+    const pushChange = (e: Event) => {
+        props.onChange((e.target as unknown as HTMLInputElement).value);
         setEditing(false);
     };
 
@@ -58,7 +58,7 @@ export const EditableField: React.FC<EditableFieldsProps> = props => {
         <div {...rest} onDoubleClick={editing ? undefined : toggleEdit}>
             {!editing && rawDisplayValue}
             {editing && (
-                <VSCodeTextField
+                <VscodeTextfield
                     ref={inputRef}
                     value={props.value}
                     onChange={pushChange}

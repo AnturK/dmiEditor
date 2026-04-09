@@ -1,4 +1,4 @@
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton } from '@vscode-elements/react-elements';
 import React, { useEffect, useState } from "react";
 import { DmiState, Dirs, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
@@ -311,7 +311,7 @@ export const StateList: React.FC<StateListProps> = props => {
                     />
                 ))}
             </div>
-            <VSCodeButton onClick={() => addFreshState()}>Add new state</VSCodeButton>
+            <VscodeButton onClick={() => addFreshState()}>Add new state</VscodeButton>
         </>
     );
 };

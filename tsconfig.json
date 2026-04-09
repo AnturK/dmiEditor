@@ -9,7 +9,7 @@
         "jsx": "react",
         "strict": true,
         "forceConsistentCasingInFileNames": true,
-        "importHelpers": true
+        "importHelpers": true,
     },
     "exclude": ["node_modules", ".vscode-test"]
 }

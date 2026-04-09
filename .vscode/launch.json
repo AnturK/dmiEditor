@@ -6,12 +6,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "command": "npm run test",
+            "name": "Debug Tests",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
             "name": "Run Extension",
             "type": "extensionHost",
+            "debugWebviews": true,
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "outFiles": ["${workspaceFolder}/dist/**/*.js","${workspaceFolder}/dist/**/*.js.map"],
             "preLaunchTask": "npm: compile"
         }
     ]

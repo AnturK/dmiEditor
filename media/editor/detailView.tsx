@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-    VSCodeTextField,
-    VSCodeCheckbox,
-    VSCodeDivider,
-    VSCodeDropdown,
-    VSCodeOption
-} from "@vscode/webview-ui-toolkit/react";
+import { VscodeCheckbox, VscodeSingleSelect, VscodeOption, VscodeDivider, VscodeTextfield } from "@vscode-elements/react-elements";
 import { DmiState, Dirs, DirNames, Dmi } from "../../shared/dmi";
 import { EditableField } from "./components";
 import { Image } from "image-js";
@@ -281,62 +275,62 @@ export const StateDetailView: React.FC<StateDetailViewProps> = props => {
     return (
         <div onClick={() => selectedFrame !== null && setSelectedFrame(null)}>
             <div className="stateProperties">
-                <VSCodeTextField
+                <VscodeTextfield
                     value={state.name}
                     onChange={e => updateName((e.target as HTMLInputElement).value)}
                 >
                     State name
-                </VSCodeTextField>
+                </VscodeTextfield>
                 <div>
                     <label>Directions</label>
-                    <VSCodeDropdown
+                    <VscodeSingleSelect
                         style={{ marginLeft: "1em" }}
                         value={state.dirs.toString()}
                         onChange={change_dir_count}
                     >
-                        <VSCodeOption value="1">1</VSCodeOption>
-                        <VSCodeOption value="4">4</VSCodeOption>
-                        <VSCodeOption value="8">8</VSCodeOption>
-                    </VSCodeDropdown>
+                        <VscodeOption value="1">1</VscodeOption>
+                        <VscodeOption value="4">4</VscodeOption>
+                        <VscodeOption value="8">8</VscodeOption>
+                    </VscodeSingleSelect>
                 </div>
                 <div>
-                    <VSCodeCheckbox checked={state.movement} onChange={toggleMovement}>
+                    <VscodeCheckbox checked={state.movement} onChange={toggleMovement}>
                         Movement state
-                    </VSCodeCheckbox>
+                    </VscodeCheckbox>
                 </div>
                 <div>
-                    <VSCodeCheckbox checked={state.rewind} onChange={toggleRewind}>
+                    <VscodeCheckbox checked={state.rewind} onChange={toggleRewind}>
                         Rewind animation
-                    </VSCodeCheckbox>
+                    </VscodeCheckbox>
                 </div>
                 <div>
-                    <VSCodeTextField
+                    <VscodeTextfield
                         disabled={state.loop === 0}
                         value={state.loop !== 0 ? state.loop.toString() : "∞"}
                         onChange={e => updateLoopCount((e.target as HTMLInputElement).value)}
                     >
                         Loop count
-                    </VSCodeTextField>
-                    <VSCodeCheckbox
+                    </VscodeTextfield>
+                    <VscodeCheckbox
                         style={{ marginLeft: "1em" }}
                         checked={state.loop === 0}
                         onChange={toggleInfiniteLoop}
                     >
                         Loop infinitely
-                    </VSCodeCheckbox>
+                    </VscodeCheckbox>
                 </div>
                 <div>
-                    <VSCodeTextField
+                    <VscodeTextfield
                         value={state.framecount.toString()}
                         onChange={e => updateFrameCount((e.target as HTMLInputElement).value)}
                     >
                         Frames
-                    </VSCodeTextField>
+                    </VscodeTextfield>
                 </div>
             </div>
-            <VSCodeDivider />
+            <VscodeDivider />
             <div className="directionalDetailPreview">{previewGrid()}</div>
-            <VSCodeDivider />
+            <VscodeDivider />
             <div style={dynamicStyle}>
                 <div className="frameGrid">
                     <div className="gridHeader">Delay</div>
